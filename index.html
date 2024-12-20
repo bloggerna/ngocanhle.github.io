@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Landing Page</title>
+<script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .header {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .qr-code {
+            margin-top: 20px;
+            max-width: 100%;
+        }
+
+        .qr-code img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .content {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 0.95em;
+        }
+
+        .content p {
+            margin: 8px 0;
+            color: #444;
+        }
+
+        .content strong {
+            color: #333;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .footer-contact {
+          margin-top: 20px;
+          font-size: 0.9em;
+          color: #333;
+        }
+
+        .footer-contact strong {
+          font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Mua Proxy</div>
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="quantity">Số Lượng Proxy muốn mua (Tối thiểu 10)</label>
+                <input type="number" id="quantity" name="quantity" placeholder="Nhập số lượng" min="10" required>
+            </div>
+            <div class="form-group">
+                <label for="telegram">Tài Khoản Telegram</label>
+                <input type="text" id="telegram" name="telegram" placeholder="@telegram_account" required>
+            </div>
+            <button type="button" onclick="generateQR()">Mua Ngay</button>
+        </form>
+        <div class="qr-code" id="qrCodeContainer">
+            <img id="qrCode" src="" alt="QR Code" style="display:none;">
+        </div>
+        <div class="content" id="contentContainer" style="display: none;">
+            <p><strong>Ngân hàng:</strong> Techcombank</p>
+            <p><strong>Số tài khoản:</strong> 9996996666</p>
+            <p><strong>Người nhận:</strong> LE NGOC ANH</p>
+            <p><strong>Nội dung chuyển khoản:</strong> <span id="paymentContent"></span> <button class="copy-btn" onclick="copyContent()">Copy</button></p>
+        </div>
+    </div>
+    <p class="footer-contact"><strong>Chi tiết xin liên hệ :</strong> @ngocanhle1412</p>
+
+    <script>
+        function generateQR() {
+            const quantity = document.getElementById('quantity').value;
+            const telegram = document.getElementById('telegram').value;
+            const today = new Date();
+            const date = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+
+            if (!quantity || quantity < 10 || !telegram) {
+                alert('Vui lòng nhập đủ thông tin và số lượng tối thiểu là 10.');
+                return;
+            }
+
+            const amount = quantity * 14000;
+            const paymentContent = `${date} ${quantity}PRX ${telegram}`;
+            const qrApiUrl = `https://img.vietqr.io/image/techcombank-9996996666-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(paymentContent)}&accountName=LE%20NGOC%20ANH`;
+
+            document.getElementById('qrCode').src = qrApiUrl;
+            document.getElementById('qrCode').style.display = 'block';
+
+            document.getElementById('paymentContent').textContent = paymentContent;
+            document.getElementById('contentContainer').style.display = 'block';
+        }
+
+        function copyContent() {
+            const content = document.getElementById('paymentContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Đã sao chép nội dung chuyển khoản!');
+            }).catch(() => {
+                alert('Không thể sao chép. Vui lòng thử lại!');
+            });
+        }
+    </script>
+</body>
+</html>
